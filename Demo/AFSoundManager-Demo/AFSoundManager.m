@@ -34,16 +34,24 @@ typedef NS_ENUM(int, AFSoundManagerType) {
         soundManager = [[self alloc]init];
     });
     
-    [[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryPlayback error:nil];
+    if ([AVAudioSession sharedInstance].category != AVAudioSessionCategoryPlayAndRecord) {
+        [[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryPlayback error:nil];
+    }
     [[AVAudioSession sharedInstance] setActive:YES error:nil];
     [[UIApplication sharedApplication] beginReceivingRemoteControlEvents];
     
     return soundManager;
 }
 
+-(void)fetchInfoForCurrentPlaying {
+    // TODO:
+}
+
 -(void)startPlayingLocalFileWithName:(NSString *)name andBlock:(progressBlock)block {
     
-    [[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryPlayback error:nil];
+    if ([AVAudioSession sharedInstance].category != AVAudioSessionCategoryPlayAndRecord) {
+        [[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryPlayback error:nil];
+    }
     [[AVAudioSession sharedInstance] setActive:YES error:nil];
     
     NSString *filePath = [NSString stringWithFormat:@"%@/%@", [[NSBundle mainBundle]resourcePath], name];
@@ -133,28 +141,6 @@ typedef NS_ENUM(int, AFSoundManagerType) {
         }
         [_audioPlayer stop];
     }
-}
-
--(void)startPlayingQueueWithItems:(NSArray *)array andBlock:(progressBlock)block {
-    
-    NSMutableArray *filteredArray = [NSMutableArray array];
-    
-    for (id item in array) {
-        
-        if ([item isKindOfClass:[AVPlayerItem class]] && item) {
-            
-            [filteredArray addObject:item];
-        } else if ([item isKindOfClass:[NSString class]] && item) {
-            
-            NSString *filePath = [NSString stringWithFormat:@"%@/%@", [[NSBundle mainBundle]resourcePath], item];
-            NSURL *fileURL = [NSURL fileURLWithPath:filePath];
-            AVPlayerItem *tempItem = [[AVPlayerItem alloc]initWithURL:fileURL];
-            
-            [filteredArray addObject:tempItem];
-        }
-    }
-    
-    _queuePlayer = [[AVQueuePlayer alloc]initWithItems:filteredArray];
 }
 
 -(NSDictionary *)retrieveInfoForCurrentPlaying {
